@@ -1,6 +1,8 @@
 # Building A Crypto Trading Bot - The Book
 
-![Book Cover](images/portada.png)
+<p align="center">
+  <img src="images/portada.png" alt="Building A Crypto Trading Bot Book Cover" width="600"/>
+</p>
 
 ## About This Book
 
@@ -8,44 +10,48 @@ This book provides a comprehensive guide to building a cryptocurrency trading bo
 
 ## Contents
 
-The book is organized into chapters that progressively build your understanding of cryptocurrency trading and bot development:
+The book is organized into chapters that progressively build your understanding:
 
 1. Introduction to Crypto Trading Bots
 2. Setting Up Your Development Environment
 3. Understanding Trading Strategies
 4. Building the Trading Engine
-5. Implementing the Backend API
-6. Creating the Frontend Dashboard
-7. Advanced Features and Optimizations
+5. Creating the Web Interface
+6. Implementing Trading Strategies
+7. Risk Management and Portfolio Optimization
 8. Testing and Deployment
-9. Risk Management and Best Practices
-10. Future Enhancements
+9. Advanced Features and Optimizations
+10. Maintenance and Monitoring
 
 ## How to Use This Book
 
-1. Follow the chapters in sequence
-2. Code along with the examples
-3. Experiment with different strategies
-4. Test thoroughly with paper trading
-5. Join the community and contribute
+1. Start by reading the chapters in order
+2. Follow along with the code examples
+3. Complete the exercises at the end of each chapter
+4. Experiment with the provided trading strategies
+5. Build your own custom strategies
 
-## Resources
+## Code Repository
 
-- Complete source code: [GitHub Repository](https://github.com/Organica-Ai-Solutions/BuildingACryptoTradingBot)
-- Support: Open an issue in the GitHub repository
-- Community: Join our Discord server for discussions
+All code examples from this book are available in the main repository:
+[BuildingACryptoTradingBot](https://github.com/Organica-Ai-Solutions/BuildingACryptoTradingBot)
 
-## Visual Materials
+## Prerequisites
 
-The `images` directory contains all diagrams, charts, and visual aids used throughout the book to help explain complex concepts.
+- Basic Python programming knowledge
+- Understanding of web development concepts
+- Familiarity with financial markets (helpful but not required)
 
-## License
+## Support
 
-This book and its accompanying source code are licensed under the MIT License.
+If you find any issues or have questions:
+1. Check the Troubleshooting guide
+2. Refer to the GitHub repository's Issues section
+3. Contact the authors through the repository
 
 ## Disclaimer
 
-The strategies and code presented in this book are for educational purposes only. Cryptocurrency trading carries significant risks. Always test thoroughly with paper trading before using real funds.
+The strategies and code presented in this book are for educational purposes only. Cryptocurrency trading involves significant risks. Always test thoroughly with paper trading before using real funds.
 
 ## Directory Structure
 
