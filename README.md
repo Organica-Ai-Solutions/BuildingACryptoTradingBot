@@ -1,5 +1,7 @@
 # Building A Crypto Trading Bot
 
+![Book Cover](book/images/portada.png)
+
 This repository contains the complete source code for building a cryptocurrency trading bot using Python, Flask, and Alpaca API. The bot supports multiple trading strategies, real-time market data analysis, and automated trade execution.
 
 ## Features

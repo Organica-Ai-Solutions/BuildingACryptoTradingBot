@@ -1,6 +1,51 @@
-# Cryptocurrency Trading Bot Book
+# Building A Crypto Trading Bot - The Book
 
-This directory contains all the materials needed to create and publish the book "Building a Cryptocurrency Trading Bot: A Complete Guide".
+![Book Cover](images/portada.png)
+
+## About This Book
+
+This book provides a comprehensive guide to building a cryptocurrency trading bot from scratch. It covers everything from basic concepts to advanced trading strategies, with practical code examples and detailed explanations.
+
+## Contents
+
+The book is organized into chapters that progressively build your understanding of cryptocurrency trading and bot development:
+
+1. Introduction to Crypto Trading Bots
+2. Setting Up Your Development Environment
+3. Understanding Trading Strategies
+4. Building the Trading Engine
+5. Implementing the Backend API
+6. Creating the Frontend Dashboard
+7. Advanced Features and Optimizations
+8. Testing and Deployment
+9. Risk Management and Best Practices
+10. Future Enhancements
+
+## How to Use This Book
+
+1. Follow the chapters in sequence
+2. Code along with the examples
+3. Experiment with different strategies
+4. Test thoroughly with paper trading
+5. Join the community and contribute
+
+## Resources
+
+- Complete source code: [GitHub Repository](https://github.com/Organica-Ai-Solutions/BuildingACryptoTradingBot)
+- Support: Open an issue in the GitHub repository
+- Community: Join our Discord server for discussions
+
+## Visual Materials
+
+The `images` directory contains all diagrams, charts, and visual aids used throughout the book to help explain complex concepts.
+
+## License
+
+This book and its accompanying source code are licensed under the MIT License.
+
+## Disclaimer
+
+The strategies and code presented in this book are for educational purposes only. Cryptocurrency trading carries significant risks. Always test thoroughly with paper trading before using real funds.
 
 ## Directory Structure
 
