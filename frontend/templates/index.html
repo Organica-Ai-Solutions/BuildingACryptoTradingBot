@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Trading Bot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Crypto Trading Bot</a>
+            <div class="d-flex">
+                <button id="startTradingBtn" class="btn btn-success me-2">Start Trading</button>
+                <button id="stopTradingBtn" class="btn btn-danger" style="display: none;">Stop Trading</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Account Information -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Account Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label>Portfolio Value</label>
+                            <h3 id="portfolioValue">$0.00</h3>
+                        </div>
+                        <div class="mb-3">
+                            <label>Buying Power</label>
+                            <h4 id="buyingPower">$0.00</h4>
+                        </div>
+                        <div>
+                            <label>Day Trades</label>
+                            <h4 id="dayTradeCount">0</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategy Settings -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Strategy Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="strategyForm">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Symbol</label>
+                                        <select class="form-select" id="symbolSelect" required>
+                                            <option value="">Select Symbol</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Strategy</label>
+                                        <select class="form-select" id="strategySelect" required>
+                                            <option value="supertrend">Supertrend</option>
+                                            <option value="macd">MACD + EMA</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Capital Per Strategy</label>
+                                        <input type="number" class="form-control" id="capitalInput" value="10000">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Supertrend Parameters -->
+                            <div id="supertrendParams">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Risk Per Trade (%)</label>
+                                            <input type="number" class="form-control" id="riskInput" value="2" min="0.1" max="10" step="0.1">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">ATR Period</label>
+                                            <input type="number" class="form-control" id="atrPeriodInput" value="10" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Multiplier</label>
+                                            <input type="number" class="form-control" id="multiplierInput" value="3" min="0.1" step="0.1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MACD Parameters -->
+                            <div id="macdParams" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">EMA Period</label>
+                                            <input type="number" class="form-control" id="emaPeriodInput" value="50" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">MACD Fast</label>
+                                            <input type="number" class="form-control" id="macdFastInput" value="12" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">MACD Slow</label>
+                                            <input type="number" class="form-control" id="macdSlowInput" value="26" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">MACD Signal</label>
+                                            <input type="number" class="form-control" id="macdSignalInput" value="9" min="1">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">RSI Period</label>
+                                            <input type="number" class="form-control" id="rsiPeriodInput" value="14" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">RSI Overbought</label>
+                                            <input type="number" class="form-control" id="rsiOverboughtInput" value="70" min="1" max="100">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">RSI Oversold</label>
+                                            <input type="number" class="form-control" id="rsiOversoldInput" value="30" min="1" max="100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Add Strategy</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Strategies -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Active Strategies</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Symbol</th>
+                                        <th>Strategy</th>
+                                        <th>Current Signal</th>
+                                        <th>Position</th>
+                                        <th>Current Price</th>
+                                        <th>Indicators</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="strategiesTable">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Chart -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Price Chart</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 
