@@ -10,6 +10,11 @@ from .strategies.supertrend_strategy import SupertrendStrategy
 from .strategies.macd_strategy import MACDStrategy
 from .utils.market_data import get_market_data, get_historical_data
 from .utils.indicators import calculate_indicators
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Create API blueprint
 api_blueprint = Blueprint('api', __name__)
@@ -47,10 +52,16 @@ def health_check():
 # Initialize trading engine
 engine = None
 
-def init_engine(api_key, api_secret, is_paper=True):
+def init_engine():
     global engine
-    if engine is None:
-        engine = TradingEngine(api_key, api_secret, is_paper)
+    api_key = os.getenv('ALPACA_API_KEY')
+    api_secret = os.getenv('ALPACA_API_SECRET')
+    is_paper = os.getenv('ALPACA_IS_PAPER', 'true').lower() == 'true'
+    
+    if not api_key or not api_secret:
+        raise ValueError("Alpaca API credentials not found in environment variables")
+        
+    engine = TradingEngine(api_key, api_secret, paper=is_paper)
     return engine
 
 # Account endpoints
@@ -58,56 +69,24 @@ def init_engine(api_key, api_secret, is_paper=True):
 def get_account():
     """Get account information."""
     try:
-        account = engine.get_account()
-        
-        # Add portfolio change calculation
-        snapshots = PortfolioSnapshot.query.filter(
-            PortfolioSnapshot.timestamp >= datetime.now().replace(hour=0, minute=0, second=0)
-        ).order_by(PortfolioSnapshot.timestamp).all()
-        
-        portfolio_change = 0
-        if snapshots and len(snapshots) > 1:
-            start_value = snapshots[0].portfolio_value
-            current_value = float(account.portfolio_value)
-            portfolio_change = ((current_value - start_value) / start_value) * 100
-        
-        # Calculate performance metrics
-        trades = Trade.query.filter(
-            Trade.transaction_time >= datetime.now() - timedelta(days=30)
-        ).all()
-        
-        performance = None
-        if trades:
-            wins = sum(1 for t in trades if t.pnl and t.pnl > 0)
-            win_rate = (wins / len(trades)) * 100 if trades else 0
-            avg_profit = sum(t.pnl for t in trades if t.pnl) / len(trades) if trades else 0
-            
-            performance = {
-                'win_rate': win_rate,
-                'avg_profit': avg_profit,
-                'percent': portfolio_change
-            }
-        
-        return jsonify({
-            'portfolio_value': account.portfolio_value,
-            'cash': account.cash,
-            'buying_power': account.buying_power,
-            'equity': account.equity,
-            'portfolio_change': portfolio_change,
-            'performance': performance
-        })
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
+        account_info = engine.get_account_info()
+        return jsonify(account_info)
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 # Trading symbols
 @api_blueprint.route('/symbols', methods=['GET'])
 def get_symbols():
     """Get available trading symbols."""
     try:
-        symbols = engine.get_tradable_assets()
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
+        symbols = engine.get_available_symbols()
         return jsonify(symbols)
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 @api_blueprint.route('/symbols/<symbol>', methods=['GET'])
 def get_symbol_details(symbol):
@@ -198,7 +177,9 @@ def get_symbol_details(symbol):
 def get_strategies():
     """Get all active strategies."""
     try:
-        strategies = engine.get_active_strategies()
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
+        strategies = engine.list_strategies()
         
         # Format strategy data
         result = []
@@ -223,75 +204,56 @@ def get_strategies():
         
         return jsonify(result)
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 @api_blueprint.route('/strategies', methods=['POST'])
 def add_strategy():
     """Add a new trading strategy."""
     try:
-        data = request.json
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
+            
+        data = request.get_json()
+        symbol = data.get('symbol')
+        strategy_type = data.get('strategy_type')
+        params = data.get('params', {})
         
-        if not data or 'symbol' not in data or 'type' not in data:
-            return jsonify({'success': False, 'message': 'Missing required fields'}), 400
-        
-        # Required parameters
-        symbol = data['symbol']
-        strategy_type = data['type']
-        
-        # Optional parameters with defaults
-        capital = data.get('capital', 1000)
-        risk_per_trade = data.get('risk_per_trade', 1)
-        
-        # Strategy-specific parameters
-        params = {}
-        
-        if strategy_type == 'supertrend':
-            params = {
-                'atr_period': data.get('atr_period', 10),
-                'multiplier': data.get('multiplier', 3.0),
-                'timeframe': data.get('timeframe', '1H')
+        if not symbol or not strategy_type:
+            return jsonify({"error": "Symbol and strategy_type are required"}), 400
+            
+        strategy = engine.add_strategy(symbol, strategy_type, params)
+        return jsonify({
+            "message": "Strategy added successfully",
+            "strategy": {
+                "symbol": symbol,
+                "type": strategy_type,
+                "active": strategy.is_active
             }
-        elif strategy_type == 'macd':
-            params = {
-                'ema_period': data.get('ema_period', 9),
-                'macd_fast': data.get('macd_fast', 12),
-                'macd_slow': data.get('macd_slow', 26),
-                'macd_signal': data.get('macd_signal', 9),
-                'rsi_period': data.get('rsi_period', 14),
-                'timeframe': data.get('timeframe', '1H')
-            }
-        else:
-            # For custom strategies, use all provided parameters
-            params = {k: v for k, v in data.items() if k not in ['symbol', 'type', 'capital', 'risk_per_trade']}
-        
-        # Add strategy to the engine
-        success = engine.add_strategy(symbol, strategy_type, params, capital, risk_per_trade)
-        
-        if success:
-            return jsonify({'success': True})
-        else:
-            return jsonify({'success': False, 'message': 'Failed to add strategy'}), 400
+        })
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
-@api_blueprint.route('/strategies/<strategy_id>', methods=['DELETE'])
-def remove_strategy(strategy_id):
+@api_blueprint.route('/strategies/<symbol>/<strategy_type>', methods=['DELETE'])
+def remove_strategy(symbol, strategy_type):
     """Remove a trading strategy."""
     try:
-        success = engine.remove_strategy(strategy_id)
-        
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
+            
+        success = engine.remove_strategy(symbol, strategy_type)
         if success:
-            return jsonify({'success': True})
-        else:
-            return jsonify({'success': False, 'message': 'Strategy not found'}), 404
+            return jsonify({"message": "Strategy removed successfully"})
+        return jsonify({"error": "Strategy not found"}), 404
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 # Position endpoints
 @api_blueprint.route('/positions', methods=['GET'])
 def get_positions():
     """Get all open positions."""
     try:
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
         positions = engine.get_positions()
         
         result = []
@@ -309,12 +271,14 @@ def get_positions():
         
         return jsonify(result)
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 @api_blueprint.route('/positions/<symbol>', methods=['DELETE'])
 def close_position(symbol):
     """Close a specific position."""
     try:
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
         success = engine.close_position(symbol)
         
         if success:
@@ -322,7 +286,7 @@ def close_position(symbol):
         else:
             return jsonify({'success': False, 'message': 'Failed to close position'}), 400
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 # Trade endpoints
 @api_blueprint.route('/trades', methods=['GET'])
@@ -330,6 +294,8 @@ def get_trades():
     """Get recent trades."""
     try:
         # Get limit parameter with default of 20
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
         limit = request.args.get('limit', 20, type=int)
         
         trades = Trade.query.order_by(Trade.transaction_time.desc()).limit(limit).all()
@@ -349,7 +315,7 @@ def get_trades():
         
         return jsonify(result)
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 # Portfolio history endpoint
 @api_blueprint.route('/portfolio/history', methods=['GET'])
@@ -357,6 +323,8 @@ def get_portfolio_history():
     """Get portfolio value history."""
     try:
         # Get timeframe parameter
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
         timeframe = request.args.get('timeframe', '1d')
         
         # Calculate start time based on timeframe
@@ -423,7 +391,7 @@ def get_portfolio_history():
             'values': values
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 # Market data endpoint
 @api_blueprint.route('/market', methods=['GET'])
@@ -431,6 +399,8 @@ def get_market_overview():
     """Get market overview data for top assets."""
     try:
         # Get top assets (either from database or using a predefined list)
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
         symbols = engine.get_tradable_assets()[:10]  # Limit to top 10 assets
         
         result = []
@@ -463,13 +433,15 @@ def get_market_overview():
         
         return jsonify(result)
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 # Backtest endpoint
 @api_blueprint.route('/backtest', methods=['POST'])
 def run_backtest():
     """Run a backtest for a specific strategy."""
     try:
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
         data = request.json
         
         if not data or 'symbol' not in data or 'type' not in data:
@@ -519,13 +491,15 @@ def run_backtest():
             'max_drawdown': results['max_drawdown']
         })
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
 # Trading control endpoints
 @api_blueprint.route('/trading/start', methods=['POST'])
 def start_trading():
     """Start the trading engine."""
     try:
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
         engine.start_trading()
         return jsonify({'success': True})
     except Exception as e:
@@ -535,6 +509,8 @@ def start_trading():
 def stop_trading():
     """Stop the trading engine."""
     try:
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
         engine.stop_trading()
         return jsonify({'success': True})
     except Exception as e:
@@ -544,7 +520,67 @@ def stop_trading():
 def get_trading_status():
     """Get the current trading status."""
     try:
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
         is_trading = engine.is_trading()
         return jsonify({'is_trading': is_trading})
     except Exception as e:
-        return jsonify({'error': str(e)}), 400 
+        return jsonify({"error": str(e)}), 400
+
+@api_blueprint.route('/positions/close-all', methods=['POST'])
+def close_all_positions():
+    """Close all open positions"""
+    try:
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
+        result = engine.close_all_positions()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@api_blueprint.route('/settings', methods=['GET'])
+def get_settings():
+    """Get current trading settings"""
+    try:
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
+        settings = {
+            "paper_trading": engine.paper_trading,
+            "capital_per_strategy": engine.capital_per_strategy,
+            "risk_per_trade": engine.risk_per_trade,
+        }
+        return jsonify(settings)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@api_blueprint.route('/settings', methods=['POST'])
+def update_settings():
+    """Update trading settings"""
+    try:
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
+        data = request.get_json()
+        
+        if 'capital_per_strategy' in data:
+            engine.set_capital_per_strategy(float(data['capital_per_strategy']))
+            
+        if 'risk_per_trade' in data:
+            engine.set_risk_per_trade(float(data['risk_per_trade']))
+            
+        return jsonify({"message": "Settings updated successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@api_blueprint.route('/market-data/<symbol>')
+def get_market_data(symbol):
+    """Get market data for a symbol"""
+    try:
+        if not engine:
+            return jsonify({"error": "Trading engine not initialized"}), 500
+        timeframe = request.args.get('timeframe', '1Min')
+        limit = int(request.args.get('limit', 100))
+        
+        data = engine.get_historical_data(symbol, timeframe, limit)
+        return jsonify(data.to_dict(orient='records'))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400 

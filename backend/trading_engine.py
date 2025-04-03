@@ -1,12 +1,17 @@
 import time
 from typing import Dict, List
 import threading
+import logging
+from datetime import datetime
+import pandas as pd
 from alpaca.trading.client import TradingClient
 from alpaca.data.historical import CryptoHistoricalDataClient
-from alpaca.trading.requests import GetAssetsRequest
-from alpaca.trading.enums import AssetClass
+from alpaca.trading.requests import GetAssetsRequest, MarketOrderRequest
+from alpaca.trading.enums import AssetClass, OrderSide, TimeInForce
 from .strategies.supertrend_strategy import SupertrendStrategy
 from .strategies.macd_strategy import MACDStrategy
+from .utils.market_data import get_historical_data
+from .utils.portfolio import calculate_position_size
 
 class TradingEngine:
     def __init__(self, api_key: str, secret_key: str, paper: bool = True):
@@ -18,6 +23,7 @@ class TradingEngine:
         self.trading_thread = None
         self.capital_per_strategy = 10000  # Default capital per strategy
         self.risk_per_trade = 0.02  # Default 2% risk per trade
+        self.logger = logging.getLogger(__name__)
 
     def add_strategy(self, symbol: str, strategy_type: str, **kwargs):
         """Add a trading strategy for a symbol"""
@@ -66,7 +72,7 @@ class TradingEngine:
             'cash': float(account.cash),
             'portfolio_value': float(account.portfolio_value),
             'buying_power': float(account.buying_power),
-            'daytrade_count': account.daytrade_count
+            'equity': float(account.equity)
         }
 
     def _run_trading_loop(self):
@@ -147,3 +153,63 @@ class TradingEngine:
     def set_risk_per_trade(self, risk: float):
         """Set the risk percentage per trade"""
         self.risk_per_trade = risk 
+
+    def place_market_order(self, symbol, side, qty, take_profit=None, stop_loss=None):
+        """Place a market order with optional take profit and stop loss"""
+        try:
+            order_data = MarketOrderRequest(
+                symbol=symbol,
+                qty=qty,
+                side=OrderSide.BUY if side.lower() == 'buy' else OrderSide.SELL,
+                time_in_force=TimeInForce.DAY
+            )
+            
+            order = self.trading_client.submit_order(order_data)
+            
+            # Add take profit and stop loss orders if specified
+            if order.status == 'accepted' and side.lower() == 'buy':
+                current_price = float(order.filled_avg_price)
+                if take_profit:
+                    tp_price = current_price * (1 + take_profit/100)
+                    self._place_take_profit_order(symbol, qty, tp_price)
+                if stop_loss:
+                    sl_price = current_price * (1 - stop_loss/100)
+                    self._place_stop_loss_order(symbol, qty, sl_price)
+                    
+            return order
+        except Exception as e:
+            self.logger.error(f"Error placing order: {str(e)}")
+            raise
+            
+    def _place_take_profit_order(self, symbol, qty, price):
+        """Place a take profit limit order"""
+        order_data = {
+            "symbol": symbol,
+            "qty": qty,
+            "side": "sell",
+            "type": "limit",
+            "time_in_force": "gtc",
+            "limit_price": price
+        }
+        return self.trading_client.submit_order(order_data)
+        
+    def _place_stop_loss_order(self, symbol, qty, price):
+        """Place a stop loss order"""
+        order_data = {
+            "symbol": symbol,
+            "qty": qty,
+            "side": "sell",
+            "type": "stop",
+            "time_in_force": "gtc",
+            "stop_price": price
+        }
+        return self.trading_client.submit_order(order_data)
+        
+    def close_all_positions(self):
+        """Close all open positions"""
+        try:
+            self.trading_client.close_all_positions(cancel_orders=True)
+            return {"message": "All positions closed successfully"}
+        except Exception as e:
+            self.logger.error(f"Error closing positions: {str(e)}")
+            raise 
