@@ -1,0 +1,165 @@
+/* Strategies Page Styles */
+
+/* Symbol Selector */
+.symbol-selector {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.symbol-input-container {
+    position: relative;
+}
+
+.symbol-input {
+    width: 100%;
+}
+
+.symbol-suggestions {
+    position: absolute;
+    width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 1000;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    background-color: #fff;
+    display: none;
+}
+
+.symbol-suggestion {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.symbol-suggestion:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+
+.selected-symbols-container {
+    min-height: 40px;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    background-color: rgba(0,0,0,0.03);
+    margin-bottom: 0.5rem;
+}
+
+.selected-symbols {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.symbol-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: #3556FB;
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+    user-select: none;
+}
+
+.symbol-remove {
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+    line-height: 0.8;
+    transition: color 0.15s ease;
+}
+
+.symbol-remove:hover {
+    color: rgba(255,255,255,0.7);
+}
+
+/* Strategy Cards */
+.strategy-form-card {
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.strategy-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.strategy-table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 1;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+}
+
+.strategy-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.strategy-table tbody tr:hover {
+    background-color: rgba(53, 86, 251, 0.05);
+}
+
+.strategy-table td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Form Enhancements */
+#addNewStrategyForm .form-label {
+    font-weight: 500;
+    color: #212529;
+}
+
+#addNewStrategyForm .form-text {
+    font-size: 0.75rem;
+}
+
+#addNewStrategyForm .input-group {
+    margin-bottom: 0.25rem;
+}
+
+#addNewStrategyForm .btn-primary {
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+}
+
+/* Fix dropdown menu display */
+.dropdown-menu.show {
+    display: block !important;
+}
+.dropdown-item:hover, .dropdown-item:focus {
+    background-color: #f8f9fa;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .strategy-table th:nth-child(5),
+    .strategy-table td:nth-child(5),
+    .strategy-table th:nth-child(6), 
+    .strategy-table td:nth-child(6) {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .strategy-table th:nth-child(4),
+    .strategy-table td:nth-child(4) {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .strategy-table th:nth-child(2),
+    .strategy-table td:nth-child(2) {
+        display: none;
+    }
+} 

@@ -1,0 +1,178 @@
+body {
+  font-family: Georgia, "Times New Roman", Times;
+  margin: 5%;
+  text-align: justify;
+  font-size: medium;
+}
+
+code {
+  font-family: monospace;
+  background-color: #f5f5f5;
+  padding: 0.2em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+pre {
+  background-color: #f5f5f5;
+  padding: 1em;
+  border-radius: 5px;
+  overflow-x: auto;
+  font-size: 0.9em;
+}
+
+section h1 {
+  text-align: left;
+  font-size: 2.5em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  padding-bottom: 0.2em;
+  border-bottom: 1px solid #eee;
+}
+
+h1 + p {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h2 {
+  text-align: left;
+  font-size: 1.5em;
+  margin-top: 1.5em;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.2em;
+}
+
+h3 {
+  text-align: left;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+h4 {
+  text-align: left;
+  font-size: 1.1em;
+  font-style: italic;
+}
+
+h5, h6 {
+  text-align: left;
+  font-size: 1em;
+}
+
+h1.title {
+  text-align: center;
+  font-size: 2.5em;
+  margin-top: 20%;
+  border: none;
+}
+
+h2.author {
+  text-align: center;
+  font-size: 1.5em;
+  font-style: normal;
+  border: none;
+}
+
+h3.date {
+  text-align: center;
+  font-size: 1.2em;
+  border: none;
+}
+
+div.title h1 {
+  text-align: center;
+  font-size: 2.5em;
+  margin-top: 20%;
+  border: none;
+}
+
+ol.toc {
+  padding: 0;
+  margin-left: 1em;
+}
+
+ol.toc li {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+hr {
+  border: none;
+  text-align: center;
+  margin: 2em 0;
+}
+
+hr:after {
+  content: '* * *';
+  display: inline-block;
+  letter-spacing: 0.5em;
+}
+
+blockquote {
+  border-left: 4px solid #ddd;
+  padding-left: 1em;
+  margin-left: 0;
+  font-style: italic;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5em 0;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 0.5em;
+}
+
+table th {
+  background-color: #f5f5f5;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.caption {
+  font-size: 0.9em;
+  text-align: center;
+  color: #666;
+  margin-top: 0.5em;
+}
+
+/* Table of Contents Styling */
+nav#toc ol {
+  padding-left: 1.5em;
+}
+
+nav#toc > ol > li > a {
+  font-weight: bold;
+}
+
+/* Code blocks with syntax highlighting */
+.sourceCode {
+  background-color: #f5f5f5;
+  border-radius: 3px;
+}
+
+/* Note blocks */
+.note {
+  background-color: #f5f5f5;
+  border-left: 4px solid #4c9ed9;
+  padding: 1em;
+  margin: 1.5em 0;
+  border-radius: 0 3px 3px 0;
+}
+
+/* Warning blocks */
+.warning {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 1em;
+  margin: 1.5em 0;
+  border-radius: 0 3px 3px 0;
+} 

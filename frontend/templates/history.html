@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Trade History - Crypto Trader{% endblock %}
+
+{% block extra_head %}
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Trade History</h2>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary filter-btn active" data-filter="all">All Trades</button>
+                <button type="button" class="btn btn-outline-success filter-btn" data-filter="buy">Buy Orders</button>
+                <button type="button" class="btn btn-outline-danger filter-btn" data-filter="sell">Sell Orders</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Trades</h6>
+                    <h3 class="card-title" id="totalTrades">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Win Rate</h6>
+                    <h3 class="card-title" id="winRate">0%</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total P&L</h6>
+                    <h3 class="card-title" id="totalPnL">$0.00</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Average Trade</h6>
+                    <h3 class="card-title" id="avgTrade">$0.00</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Performance Chart</h5>
+                    <div class="chart-container" id="chartContainer">
+                        <canvas id="performanceChart" width="800" height="300"></canvas>
+                    </div>
+                    <div class="btn-group mt-2" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-primary time-filter active" data-days="7">7D</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary time-filter" data-days="30">1M</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary time-filter" data-days="90">3M</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary time-filter" data-days="180">6M</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary time-filter" data-days="365">1Y</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade History Table -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Trade History</h5>
+            <div class="table-responsive">
+                <table class="table table-hover" id="tradesTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Symbol</th>
+                            <th>Side</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>P&L</th>
+                            <th>Strategy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Trade rows will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

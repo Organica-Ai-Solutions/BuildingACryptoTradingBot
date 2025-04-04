@@ -1,140 +1,122 @@
 # Quick Start Guide
 
-This guide will help you set up and run the cryptocurrency trading bot in less than 30 minutes.
+This guide will help you get the crypto trading bot up and running quickly.
 
 ## Prerequisites
 
-- Python 3.8+ installed
-- Git installed
-- Alpaca account with API keys
-- Basic familiarity with command line
+- Python 3.8 or higher
+- pip (Python package installer)
+- Git
+- An Alpaca account (sign up at https://app.alpaca.markets/)
 
-## 5-Minute Setup
+## Installation
 
-### 1. Clone the Repository
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/crypto_trader.git
+   cd crypto_trader
+   ```
 
-```bash
-git clone https://github.com/Organica-Ai-Solutions/BuildingACryptoTradingBot.git
-cd BuildingACryptoTradingBot
-```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows, use: .venv\Scripts\activate
+   ```
 
-### 2. Install Dependencies
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```bash
-# Create virtual environment
-python -m venv venv
+## Configuration
 
-# Activate environment
-# For Windows:
-venv\Scripts\activate
-# For macOS/Linux:
-source venv/bin/activate
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
 
-# Install requirements
-pip install -r requirements.txt
-```
+2. Edit `.env` with your settings:
+   ```
+   # Get these from https://app.alpaca.markets/
+   ALPACA_API_KEY="your_api_key"
+   ALPACA_API_SECRET="your_api_secret"
+   ALPACA_PAPER_API_KEY="your_paper_api_key"
+   ALPACA_PAPER_API_SECRET="your_paper_api_secret"
+   ALPACA_API_URL="https://paper-api.alpaca.markets"
+   ALPACA_IS_PAPER=true
 
-### 3. Configure API Keys
+   # Flask settings
+   FLASK_APP=backend.app
+   FLASK_ENV=development
+   FLASK_DEBUG=true
+   FLASK_PORT=5002
 
-Create a `.env` file in the project root:
+   # Database settings
+   DATABASE_URL=sqlite:///crypto_trader.db
+   ```
 
-```
-ALPACA_API_KEY=your_api_key_here
-ALPACA_API_SECRET=your_api_secret_here
-ALPACA_BASE_URL=https://paper-api.alpaca.markets  # Paper trading
-```
+## Running the Application
 
-## Run Example Bot
+1. Start the application:
+   ```bash
+   PYTHONPATH=/path/to/crypto_trader python backend/app.py
+   ```
 
-Launch the sample bot to verify your setup:
+2. Access the web interface:
+   - Open your browser and navigate to `http://localhost:5002`
+   - The following pages are available:
+     - Dashboard: `http://localhost:5002/dashboard`
+     - Settings: `http://localhost:5002/settings`
+     - Strategies: `http://localhost:5002/strategies`
+     - History: `http://localhost:5002/history`
 
-```bash
-python examples/basic_bot.py
-```
+## Initial Setup
 
-You should see output confirming the bot is running and connected to Alpaca.
+1. Configure API Keys:
+   - Go to the Settings page
+   - Enter your Alpaca API keys
+   - Choose between paper trading and live trading
+   - Test your API credentials
 
-## Configure Your First Strategy
+2. Configure Trading Parameters:
+   - Set maximum position size
+   - Set risk per trade
+   - Configure stop loss and take profit percentages
+   - Set maximum number of open trades
+   - Configure trailing stop percentage
 
-Edit `config/strategy_config.json`:
-
-```json
-{
-  "strategy": "supertrend",
-  "parameters": {
-    "atr_period": 10,
-    "multiplier": 3
-  },
-  "symbols": ["BTC/USD", "ETH/USD"],
-  "timeframe": "15Min",
-  "risk_per_trade": 0.02
-}
-```
-
-## Start Trading
-
-```bash
-python src/main.py --config config/strategy_config.json --paper
-```
-
-## Dashboard Access
-
-Open your browser and navigate to:
-
-```
-http://localhost:5000
-```
-
-You should see the trading dashboard with active positions and performance metrics.
-
-## Quick Configuration Reference
-
-### Strategy Types
-
-```python
-AVAILABLE_STRATEGIES = {
-    'supertrend': {  # Trend-following strategy
-        'atr_period': 10,  # ATR lookback period
-        'multiplier': 3    # ATR multiplier for bands
-    },
-    'macd': {  # Momentum strategy
-        'fast_period': 12,
-        'slow_period': 26,
-        'signal_period': 9
-    },
-    'dual_strategy': {  # Combined strategy
-        'strategies': ['supertrend', 'macd'],
-        'confirmation': 'any'  # 'any' or 'all'
-    }
-}
-```
-
-### Risk Management Settings
-
-```python
-RISK_SETTINGS = {
-    'risk_per_trade': 0.02,       # 2% of account per trade
-    'max_positions': 5,           # Maximum concurrent positions
-    'stop_loss_type': 'atr',      # 'fixed', 'percent', or 'atr'
-    'stop_loss_value': 2,         # 2 ATR units for stop loss
-    'take_profit_type': 'risk',   # 'fixed', 'percent', or 'risk'
-    'take_profit_value': 2        # 2:1 reward-to-risk ratio
-}
-```
-
-## Next Steps
-
-- **Strategy Customization**: See Chapter 4 for detailed strategy implementation
-- **Risk Management**: Configure advanced risk settings (Chapter 6)
-- **Dashboard Customization**: Modify UI components (Chapter 7)
-- **Deployment**: Set up production environment (Chapter 8)
+3. Optional: Set up Email Notifications
+   - Enable email notifications
+   - Enter your email address
+   - Choose which notifications to receive (trades, signals, errors)
 
 ## Troubleshooting
 
-### Common Issues
+If you encounter any issues:
 
-- **Authentication Errors**: Double-check API keys in `.env` file
-- **Module Not Found**: Ensure all dependencies are installed (`pip install -r requirements.txt`)
-- **Connection Error**: Verify internet connection and API endpoint status
+1. Check the logs:
+   - Application logs are in the console
+   - Database logs are in SQLite database file
 
-For more detailed troubleshooting, see the "Troubleshooting and FAQ" section. 
+2. Common Issues:
+   - Import errors: Make sure PYTHONPATH is set correctly
+   - WebSocket errors: Verify eventlet and Flask-SocketIO versions
+   - Database errors: Ensure the database is initialized
+   - API errors: Verify your API credentials and trading mode
+
+3. For more detailed troubleshooting:
+   - Refer to the Troubleshooting Guide in the documentation
+   - Check the application logs for specific error messages
+   - Verify all environment variables are set correctly
+
+## Next Steps
+
+After getting the basic setup working:
+
+1. Explore different trading strategies
+2. Monitor the dashboard for performance
+3. Adjust trading parameters as needed
+4. Set up automated notifications
+5. Review trading history and performance metrics
+
+For more detailed information, refer to the full documentation in the `book` directory. 

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import Dict
-from .base_strategy import BaseStrategy
+from backend.strategies.base_strategy import BaseStrategy
 from alpaca.trading.enums import OrderSide
 
 class MACDStrategy(BaseStrategy):

@@ -1,211 +1,302 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Trading Bot</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Crypto Trading Bot</a>
-            <div class="d-flex">
-                <button id="startTradingBtn" class="btn btn-success me-2">Start Trading</button>
-                <button id="stopTradingBtn" class="btn btn-danger" style="display: none;">Stop Trading</button>
-            </div>
-        </div>
-    </nav>
+{% extends "base.html" %}
 
-    <div class="container-fluid mt-4">
-        <div class="row">
-            <!-- Account Information -->
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Account Information</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label>Portfolio Value</label>
-                            <h3 id="portfolioValue">$0.00</h3>
-                        </div>
-                        <div class="mb-3">
-                            <label>Buying Power</label>
-                            <h4 id="buyingPower">$0.00</h4>
-                        </div>
-                        <div>
-                            <label>Day Trades</label>
-                            <h4 id="dayTradeCount">0</h4>
+{% block title %}Dashboard - Crypto Trader{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Portfolio Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Portfolio Performance</h5>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-primary timeframe-btn" data-timeframe="1d">1D</button>
+                            <button type="button" class="btn btn-outline-primary timeframe-btn" data-timeframe="1w">1W</button>
+                            <button type="button" class="btn btn-outline-primary timeframe-btn active" data-timeframe="1m">1M</button>
+                            <button type="button" class="btn btn-outline-primary timeframe-btn" data-timeframe="3m">3M</button>
+                            <button type="button" class="btn btn-outline-primary timeframe-btn" data-timeframe="1y">1Y</button>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Strategy Settings -->
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Strategy Settings</h5>
-                    </div>
-                    <div class="card-body">
-                        <form id="strategyForm">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label class="form-label">Symbol</label>
-                                        <select class="form-select" id="symbolSelect" required>
-                                            <option value="">Select Symbol</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label class="form-label">Strategy</label>
-                                        <select class="form-select" id="strategySelect" required>
-                                            <option value="supertrend">Supertrend</option>
-                                            <option value="macd">MACD + EMA</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label class="form-label">Capital Per Strategy</label>
-                                        <input type="number" class="form-control" id="capitalInput" value="10000">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Supertrend Parameters -->
-                            <div id="supertrendParams">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Risk Per Trade (%)</label>
-                                            <input type="number" class="form-control" id="riskInput" value="2" min="0.1" max="10" step="0.1">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">ATR Period</label>
-                                            <input type="number" class="form-control" id="atrPeriodInput" value="10" min="1">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">Multiplier</label>
-                                            <input type="number" class="form-control" id="multiplierInput" value="3" min="0.1" step="0.1">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- MACD Parameters -->
-                            <div id="macdParams" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">EMA Period</label>
-                                            <input type="number" class="form-control" id="emaPeriodInput" value="50" min="1">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">MACD Fast</label>
-                                            <input type="number" class="form-control" id="macdFastInput" value="12" min="1">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">MACD Slow</label>
-                                            <input type="number" class="form-control" id="macdSlowInput" value="26" min="1">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="mb-3">
-                                            <label class="form-label">MACD Signal</label>
-                                            <input type="number" class="form-control" id="macdSignalInput" value="9" min="1">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">RSI Period</label>
-                                            <input type="number" class="form-control" id="rsiPeriodInput" value="14" min="1">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">RSI Overbought</label>
-                                            <input type="number" class="form-control" id="rsiOverboughtInput" value="70" min="1" max="100">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label class="form-label">RSI Oversold</label>
-                                            <input type="number" class="form-control" id="rsiOversoldInput" value="30" min="1" max="100">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary">Add Strategy</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Active Strategies -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Active Strategies</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Symbol</th>
-                                        <th>Strategy</th>
-                                        <th>Current Signal</th>
-                                        <th>Position</th>
-                                        <th>Current Price</th>
-                                        <th>Indicators</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="strategiesTable">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Price Chart -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Price Chart</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="priceChart"></canvas>
+                    <div style="height: 300px;">
+                        <canvas id="portfolioChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
-</html> 
+    <!-- Account Information -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Account Information</h5>
+                        <div class="btn-group">
+                            <button id="startTradingBtn" class="btn btn-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Start automated trading for all active strategies">
+                                <i class="fas fa-play me-1"></i>Start
+                            </button>
+                            <button id="pauseTradingBtn" class="btn btn-warning btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Pause trading temporarily - maintains open positions">
+                                <i class="fas fa-pause me-1"></i>Pause
+                            </button>
+                            <button id="stopTradingBtn" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Stop trading and close all open positions">
+                                <i class="fas fa-stop me-1"></i>Stop
+                            </button>
+                        </div>
+                    </div>
+                    <div class="account-info">
+                        <div class="info-item" data-bs-toggle="tooltip" data-bs-placement="left" title="Total value of your portfolio including cash and positions">
+                            <span class="label">Portfolio Value:</span>
+                            <span id="accountBalance" class="value">$0.00</span>
+                        </div>
+                        <div class="info-item" data-bs-toggle="tooltip" data-bs-placement="left" title="Available funds for new trades">
+                            <span class="label">Buying Power:</span>
+                            <span id="buyingPower" class="value">$0.00</span>
+                        </div>
+                        <div class="info-item" data-bs-toggle="tooltip" data-bs-placement="left" title="Number of day trades used in the last 5 trading days">
+                            <span class="label">Day Trades:</span>
+                            <span id="dayTrades" class="value">0/3</span>
+                        </div>
+                        <div class="info-item" data-bs-toggle="tooltip" data-bs-placement="left" title="Current trading status">
+                            <span class="label">Status:</span>
+                            <span id="tradingStatus" class="status-indicator offline" title="Trading Status">Inactive</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Strategy Settings</h5>
+                    <form id="dashboardStrategyForm" class="row g-3" onsubmit="return false;">
+                        <div class="col-12">
+                            <label for="symbolInput" class="form-label" data-bs-toggle="tooltip" data-bs-placement="top" title="Select one or more trading pairs (e.g. BTC/USD, ETH/USD)">Trading Pairs</label>
+                            <div class="symbol-selector">
+                                <input type="text" class="symbol-input" id="symbolInput" placeholder="Search for symbols (e.g. BTC/USD)">
+                                <div class="symbol-suggestions"></div>
+                                <div class="selected-symbols"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" data-bs-toggle="tooltip" data-bs-placement="top" title="Choose the trading strategy to apply">Strategy Type</label>
+                            <select class="form-select" id="strategySelect" required>
+                                <option value="">Select Strategy</option>
+                                <option value="supertrend" data-bs-toggle="tooltip" data-bs-placement="right" title="Trend-following strategy using SuperTrend indicator">Supertrend</option>
+                                <option value="macd" data-bs-toggle="tooltip" data-bs-placement="right" title="Momentum strategy using MACD indicator">MACD</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" data-bs-toggle="tooltip" data-bs-placement="top" title="Amount of capital allocated to this strategy">Capital Per Strategy</label>
+                            <input type="number" class="form-control" id="capitalPerStrategy" value="10000" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" data-bs-toggle="tooltip" data-bs-placement="top" title="Maximum risk percentage per trade (1-5% recommended)">Risk Per Trade (%)</label>
+                            <input type="number" class="form-control" id="riskPerTrade" value="2" required>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary" id="addStrategyBtn" data-bs-toggle="tooltip" data-bs-placement="top" title="Create a new trading strategy with the selected parameters">
+                                <i class="fas fa-plus me-1"></i>Add Strategy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Strategies -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Active Strategies</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th data-bs-toggle="tooltip" data-bs-placement="top" title="Trading pair symbol">Symbol</th>
+                                    <th data-bs-toggle="tooltip" data-bs-placement="top" title="Type of trading strategy">Strategy</th>
+                                    <th data-bs-toggle="tooltip" data-bs-placement="top" title="Current trading signal">Signal</th>
+                                    <th data-bs-toggle="tooltip" data-bs-placement="top" title="Current position size">Position</th>
+                                    <th data-bs-toggle="tooltip" data-bs-placement="top" title="Current market price">Price</th>
+                                    <th data-bs-toggle="tooltip" data-bs-placement="top" title="Strategy parameters">Parameters</th>
+                                    <th data-bs-toggle="tooltip" data-bs-placement="top" title="Strategy actions">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activeStrategies">
+                                <tr>
+                                    <td colspan="7" class="text-center">No active strategies</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Price Chart</h5>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-primary" data-timeframe="1H">1H</button>
+                            <button type="button" class="btn btn-outline-primary active" data-timeframe="4H">4H</button>
+                            <button type="button" class="btn btn-outline-primary" data-timeframe="1D">1D</button>
+                        </div>
+                    </div>
+                    <div style="height: 400px;">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Strategy Modal -->
+<div class="modal fade" id="addStrategyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Strategy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Strategy form fields will be dynamically populated -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveStrategy">Save Strategy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Custom scripts -->
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+<script>
+// Initialize everything after DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Initialize Socket.IO
+    const socket = io();
+    
+    // Listen for price updates
+    socket.on('price_update', function(data) {
+        console.log('Price update:', data);
+        // Update price display
+        if (data.symbol === $('#symbolInput').val()) {
+            $('#currentPrice').text(formatCurrency(data.price));
+        }
+    });
+
+    // Listen for trade updates
+    socket.on('trade_update', function(data) {
+        console.log('Trade update:', data);
+        // Refresh account info
+        updateAccountInfo();
+    });
+
+    // Initialize symbol selector
+    const symbolSelector = initSymbolSelector(
+        document.querySelector('.symbol-selector'),
+        (selectedSymbols) => {
+            console.log('Selected symbols:', selectedSymbols);
+        }
+    );
+
+    // Initialize trading controls
+    $('#startTradingBtn').on('click', function() {
+        $.post('/api/trading/start')
+            .done(function(response) {
+                showToast('Trading started successfully', 'success');
+                updateTradingStatus();
+            })
+            .fail(function(error) {
+                showToast('Failed to start trading', 'error');
+            });
+    });
+
+    $('#pauseTradingBtn').on('click', function() {
+        $.post('/api/trading/pause')
+            .done(function(response) {
+                showToast('Trading paused successfully', 'success');
+                updateTradingStatus();
+            })
+            .fail(function(error) {
+                showToast('Failed to pause trading', 'error');
+            });
+    });
+
+    $('#stopTradingBtn').on('click', function() {
+        $.post('/api/trading/stop')
+            .done(function(response) {
+                showToast('Trading stopped successfully', 'success');
+                updateTradingStatus();
+            })
+            .fail(function(error) {
+                showToast('Failed to stop trading', 'error');
+            });
+    });
+
+    // Initialize strategy form
+    $('#dashboardStrategyForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const selectedSymbols = $('.selected-symbols .symbol-badge')
+            .map(function() { return $(this).text().replace('×', '').trim(); })
+            .get();
+
+        if (!selectedSymbols.length) {
+            showToast('Please select at least one symbol', 'error');
+            return;
+        }
+
+        const strategyData = {
+            symbols: selectedSymbols,
+            strategy_type: $('#strategySelect').val(),
+            capital: parseFloat($('#capitalPerStrategy').val()),
+            risk_per_trade: parseFloat($('#riskPerTrade').val())
+        };
+
+        $.ajax({
+            url: '/api/strategies',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(strategyData),
+            success: function(response) {
+                showToast('Strategy added successfully', 'success');
+                $('#dashboardStrategyForm')[0].reset();
+                $('.selected-symbols').empty();
+                updateActiveStrategies();
+            },
+            error: function(error) {
+                showToast('Failed to add strategy', 'error');
+            }
+        });
+    });
+
+    // Start periodic updates
+    updateAccountInfo();
+    setInterval(updateAccountInfo, 30000);
+});
+</script>
+{% endblock %} 
